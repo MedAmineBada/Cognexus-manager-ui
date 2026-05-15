@@ -1,0 +1,433 @@
+{
+  "services": {
+    "ocr_engine": {
+      "description": "OCR processing for image-to-text",
+      "endpoints": {
+        "scan": {
+          "flag_name": "ocr_engine.scan",
+          "description": "Scan and extract text from images",
+          "enabled": true,
+          "depends_on": []
+        }
+      }
+    },
+    "document_parser": {
+      "description": "PDF document parsing",
+      "endpoints": {
+        "extract": {
+          "flag_name": "document_parser.extract",
+          "description": "Extract text from PDF documents",
+          "enabled": true,
+          "depends_on": []
+        }
+      }
+    },
+    "anti_cheat": {
+      "description": "Cheating detection system",
+      "endpoints": {
+        "insert": {
+          "flag_name": "anti_cheat.insert",
+          "description": "Embed and insert exam answers for later comparison",
+          "enabled": true,
+          "depends_on": []
+        },
+        "report": {
+          "flag_name": "anti_cheat.report",
+          "description": "Get a report of suspected cheating attempts",
+          "enabled": true,
+          "depends_on": []
+        }
+      }
+    },
+    "external_gateway": {
+      "description": "External API gateway for third-party integrations",
+      "endpoints": {
+        "prompt": {
+          "flag_name": "external_gateway.prompt",
+          "description": "Prompt an LLM",
+          "enabled": true,
+          "depends_on": []
+        },
+        "upload": {
+          "flag_name": "external_gateway.upload",
+          "description": "Upload files to cloudinary",
+          "enabled": true,
+          "depends_on": []
+        }
+      }
+    },
+    "exam_orchestrator": {
+      "description": "Exam orchestration service",
+      "endpoints": {
+        "create_exam": {
+          "flag_name": "exam_orchestrator.create_exam",
+          "description": "Create new exam",
+          "enabled": true,
+          "depends_on": [
+            "document_parser.extract",
+            "external_gateway.prompt",
+            "external_gateway.upload"
+          ]
+        },
+        "save_exam": {
+          "flag_name": "exam_orchestrator.save_exam",
+          "description": "Save a created exam",
+          "enabled": true,
+          "depends_on": []
+        },
+        "get_exam": {
+          "flag_name": "exam_orchestrator.get_exam",
+          "description": "Get a saved exam(s)",
+          "enabled": true,
+          "depends_on": []
+        },
+        "view_exam": {
+          "flag_name": "exam_orchestrator.view_exam",
+          "description": "View an exam",
+          "enabled": true,
+          "depends_on": []
+        },
+        "get_grades": {
+          "flag_name": "exam_orchestrator.get_grades",
+          "description": "Get exam grades",
+          "enabled": true,
+          "depends_on": []
+        },
+        "create_correction": {
+          "flag_name": "exam_orchestrator.create_correction",
+          "description": "Create exam correction",
+          "enabled": true,
+          "depends_on": [
+            "exam_orchestrator.create_exam",
+            "exam_orchestrator.save_exam",
+            "document_parser.extract",
+            "external_gateway.prompt",
+            "external_gateway.upload"
+          ]
+        },
+        "save_correction": {
+          "flag_name": "exam_orchestrator.save_correction",
+          "description": "Save a created correction",
+          "enabled": true,
+          "depends_on": [
+            "exam_orchestrator.create_exam",
+            "exam_orchestrator.save_exam"
+          ]
+        },
+        "get_correction": {
+          "flag_name": "exam_orchestrator.get_correction",
+          "description": "Get a saved correction",
+          "enabled": true,
+          "depends_on": []
+        },
+        "submit": {
+          "flag_name": "exam_orchestrator.submit",
+          "description": "Submit exam answers for grading",
+          "enabled": true,
+          "depends_on": [
+            "ocr_engine.scan",
+            "external_gateway.prompt",
+            "external_gateway.upload"
+          ]
+        },
+        "get_report": {
+          "flag_name": "exam_orchestrator.get_report",
+          "description": "Get exam cheat report",
+          "enabled": true,
+          "depends_on": [
+            "anti_cheat.report"
+          ]
+        },
+        "modify_exam": {
+          "flag_name": "exam_orchestrator.modify_exam",
+          "description": "Modify an exam",
+          "enabled": true,
+          "depends_on": []
+        },
+        "delete_exam": {
+          "flag_name": "exam_orchestrator.delete_exam",
+          "description": "Delete an exam",
+          "enabled": true,
+          "depends_on": []
+        }
+      }
+    },
+    "auth": {
+      "description": "Authentication service",
+      "endpoints": {
+        "student.login": {
+          "flag_name": "auth.student.login",
+          "description": "Student login",
+          "enabled": true,
+          "depends_on": []
+        },
+        "student.register": {
+          "flag_name": "auth.student.register",
+          "description": "Student register",
+          "enabled": true,
+          "depends_on": []
+        },
+        "teacher.login": {
+          "flag_name": "auth.teacher.login",
+          "description": "Teacher login",
+          "enabled": true,
+          "depends_on": []
+        },
+        "teacher.register": {
+          "flag_name": "auth.teacher.register",
+          "description": "Teacher register",
+          "enabled": true,
+          "depends_on": []
+        },
+        "admin.login": {
+          "flag_name": "auth.admin.login",
+          "description": "Admin login",
+          "enabled": true,
+          "depends_on": []
+        },
+        "verify-otp": {
+          "flag_name": "auth.verify-otp",
+          "description": "Verify OTP",
+          "enabled": true,
+          "depends_on": []
+        },
+        "resend-otp": {
+          "flag_name": "auth.resend-otp",
+          "description": "Resend OTP",
+          "enabled": true,
+          "depends_on": []
+        },
+        "forgot-password": {
+          "flag_name": "auth.forgot-password",
+          "description": "Request password reset",
+          "enabled": true,
+          "depends_on": []
+        },
+        "reset-password": {
+          "flag_name": "auth.reset-password",
+          "description": "Reset password",
+          "enabled": true,
+          "depends_on": []
+        },
+        "logout": {
+          "flag_name": "auth.logout",
+          "description": "Logout current user",
+          "enabled": true,
+          "depends_on": []
+        },
+        "refresh": {
+          "flag_name": "auth.refresh",
+          "description": "Refresh access token",
+          "enabled": true,
+          "depends_on": []
+        },
+        "admin.users.create": {
+          "flag_name": "auth.admin.users.create",
+          "description": "Admin create user",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.me.get": {
+          "flag_name": "auth.users.me.get",
+          "description": "Get current user profile",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.me.update": {
+          "flag_name": "auth.users.me.update",
+          "description": "Update current user profile",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.me.password": {
+          "flag_name": "auth.users.me.password",
+          "description": "Update current user password",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.me.image.upload": {
+          "flag_name": "auth.users.me.image.upload",
+          "description": "Upload current user profile image",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.me.image.delete": {
+          "flag_name": "auth.users.me.image.delete",
+          "description": "Delete current user profile image",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.list": {
+          "flag_name": "auth.users.list",
+          "description": "List all users",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.students": {
+          "flag_name": "auth.users.students",
+          "description": "Get all students",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.teachers": {
+          "flag_name": "auth.users.teachers",
+          "description": "Get all teachers",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.lead-teachers": {
+          "flag_name": "auth.users.lead-teachers",
+          "description": "Get all lead teachers",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.by-email": {
+          "flag_name": "auth.users.by-email",
+          "description": "Get user by email",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.by-id": {
+          "flag_name": "auth.users.by-id",
+          "description": "Get user by ID",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.role": {
+          "flag_name": "auth.users.role",
+          "description": "Update user role",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.delete": {
+          "flag_name": "auth.users.delete",
+          "description": "Delete user (soft or permanent)",
+          "enabled": true,
+          "depends_on": []
+        },
+        "users.reactivate": {
+          "flag_name": "auth.users.reactivate",
+          "description": "Reactivate user account",
+          "enabled": true,
+          "depends_on": []
+        },
+        "status.get": {
+          "flag_name": "auth.status.get",
+          "description": "Get user status",
+          "enabled": true,
+          "depends_on": []
+        },
+        "status.update": {
+          "flag_name": "auth.status.update",
+          "description": "Update user status",
+          "enabled": true,
+          "depends_on": []
+        }
+      }
+    },
+    "classes": {
+      "description": "Class management service",
+      "endpoints": {
+        "create": {
+          "flag_name": "classes.create",
+          "description": "Create a new class",
+          "enabled": true,
+          "depends_on": []
+        },
+        "list": {
+          "flag_name": "classes.list",
+          "description": "List all classes",
+          "enabled": true,
+          "depends_on": []
+        },
+        "get": {
+          "flag_name": "classes.get",
+          "description": "Get class details by ID",
+          "enabled": true,
+          "depends_on": []
+        },
+        "update": {
+          "flag_name": "classes.update",
+          "description": "Update class information",
+          "enabled": true,
+          "depends_on": []
+        },
+        "soft-delete": {
+          "flag_name": "classes.soft-delete",
+          "description": "Soft delete a class",
+          "enabled": true,
+          "depends_on": []
+        },
+        "permanent-delete": {
+          "flag_name": "classes.permanent-delete",
+          "description": "Permanently delete a class",
+          "enabled": true,
+          "depends_on": []
+        },
+        "subjects.add": {
+          "flag_name": "classes.subjects.add",
+          "description": "Add subject to class",
+          "enabled": true,
+          "depends_on": []
+        },
+        "subjects.list": {
+          "flag_name": "classes.subjects.list",
+          "description": "List all subjects in class",
+          "enabled": true,
+          "depends_on": []
+        },
+        "subjects.update": {
+          "flag_name": "classes.subjects.update",
+          "description": "Update subject in class",
+          "enabled": true,
+          "depends_on": []
+        },
+        "subjects.soft-delete": {
+          "flag_name": "classes.subjects.soft-delete",
+          "description": "Soft delete subject from class",
+          "enabled": true,
+          "depends_on": []
+        },
+        "subjects.permanent-delete": {
+          "flag_name": "classes.subjects.permanent-delete",
+          "description": "Permanently delete subject from class",
+          "enabled": true,
+          "depends_on": []
+        },
+        "enroll": {
+          "flag_name": "classes.enroll",
+          "description": "Enroll student in class",
+          "enabled": true,
+          "depends_on": []
+        },
+        "students.list": {
+          "flag_name": "classes.students.list",
+          "description": "List all students in class",
+          "enabled": true,
+          "depends_on": []
+        },
+        "students.update": {
+          "flag_name": "classes.students.update",
+          "description": "Update student enrollment",
+          "enabled": true,
+          "depends_on": []
+        },
+        "students.soft-delete": {
+          "flag_name": "classes.students.soft-delete",
+          "description": "Soft delete student enrollment",
+          "enabled": true,
+          "depends_on": []
+        },
+        "students.permanent-delete": {
+          "flag_name": "classes.students.permanent-delete",
+          "description": "Permanently delete student enrollment",
+          "enabled": true,
+          "depends_on": []
+        }
+      }
+    }
+  },
+  "total_flags": 62,
+  "enabled_count": 62,
+  "disabled_count": 0
+}
