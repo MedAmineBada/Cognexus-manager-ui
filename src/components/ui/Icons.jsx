@@ -17,6 +17,15 @@ export function Icon({ name, className = '' }) {
           <rect x="7" y="10.5" width="10" height="3" rx="1.5" fill="currentColor" opacity=".35" />
         </svg>
       );
+    case 'sliders':
+      return (
+        <svg viewBox="0 0 24 24" {...common}>
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <circle cx="9" cy="7" r="2" fill="currentColor" />
+          <circle cx="15" cy="12" r="2" fill="currentColor" />
+          <circle cx="10" cy="17" r="2" fill="currentColor" />
+        </svg>
+      );
     case 'shield':
       return (
         <svg viewBox="0 0 24 24" {...common}>
@@ -45,6 +54,14 @@ export function Icon({ name, className = '' }) {
           <rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
           <path d="m8 10 3 2-3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M13 14h3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+      );
+    case 'logout':
+      return (
+        <svg viewBox="0 0 24 24" {...common}>
+          <path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M16 17l5-5-5-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M21 12H9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
         </svg>
       );
     case 'search':

@@ -1,18 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import flagsData from '../data/flagsData.json';
-import { countFlags, enrichCatalog, findFlags, normalizeCatalog, setEndpointEnabled, setServiceEnabled, upsertFlag } from '../utils/flagUtils.js';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { getFlags, toggleEndpoint, toggleService } from '../api/flagsApi.js';
+import { countFlags, enrichCatalog, findFlags, normalizeCatalog } from '../utils/flagUtils.js';
+import { applyTheme, persistTheme, readStoredTheme } from '../utils/theme.js';
 import { Sidebar } from '../components/layout/Sidebar.jsx';
 import { TopBar } from '../components/layout/TopBar.jsx';
 import { FlagToolbar } from '../components/flags/FlagToolbar.jsx';
 import { FlagRow } from '../components/flags/FlagRow.jsx';
-import { NewFlagModal } from '../components/flags/NewFlagModal.jsx';
-
-function getInitialTheme() {
-  if (typeof window === 'undefined') return 'light';
-  const saved = window.localStorage.getItem('feature-flags-theme');
-  if (saved === 'light' || saved === 'dark') return saved;
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
 
 function useMediaQuery(query) {
   const getMatches = () => {
@@ -45,26 +38,65 @@ function useMediaQuery(query) {
   return matches;
 }
 
+function catalogStats(catalog, apiMeta) {
+  if (apiMeta?.total_flags != null) {
+    return {
+      total: apiMeta.total_flags,
+      enabled: apiMeta.enabled_count ?? 0,
+      disabled: apiMeta.disabled_count ?? 0,
+    };
+  }
+  return countFlags(catalog);
+}
+
 export default function FeatureFlagsPage() {
-  const [catalog, setCatalog] = useState(() => normalizeCatalog(flagsData));
+  const [catalog, setCatalog] = useState(() => normalizeCatalog({ services: {} }));
+  const [apiMeta, setApiMeta] = useState(null);
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState(() => new Set());
-  const [modalOpen, setModalOpen] = useState(false);
-  const [theme, setTheme] = useState(getInitialTheme);
+  const [theme, setTheme] = useState(readStoredTheme);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const isMobileNav = useMediaQuery('(max-width: 919px)');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isToggling, setIsToggling] = useState(false);
+  const [error, setError] = useState(null);
+  const previousQueryRef = useRef(query);
+  const isMobileNav = useMediaQuery('(max-width: 920px)');
 
-  const stats = useMemo(() => countFlags(catalog), [catalog]);
+  const applyFlagsResponse = useCallback((data) => {
+    setCatalog(normalizeCatalog(data));
+    setApiMeta({
+      total_flags: data.total_flags,
+      enabled_count: data.enabled_count,
+      disabled_count: data.disabled_count,
+    });
+  }, []);
+
+  const loadFlags = useCallback(async () => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      const data = await getFlags();
+      applyFlagsResponse(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load feature flags.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [applyFlagsResponse]);
+
+  useEffect(() => {
+    loadFlags();
+  }, [loadFlags]);
+
+  const stats = useMemo(() => catalogStats(catalog, apiMeta), [catalog, apiMeta]);
   const services = useMemo(() => {
     const list = query.trim() ? findFlags(catalog, query) : enrichCatalog(catalog);
     return list;
   }, [catalog, query]);
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle('dark', theme === 'dark');
-    root.dataset.theme = theme;
-    window.localStorage.setItem('feature-flags-theme', theme);
+    applyTheme(theme);
+    persistTheme(theme);
   }, [theme]);
 
   useEffect(() => {
@@ -86,6 +118,11 @@ export default function FeatureFlagsPage() {
   }, [isMobileNav, mobileNavOpen]);
 
   useEffect(() => {
+    const queryChanged = previousQueryRef.current !== query;
+    previousQueryRef.current = query;
+
+    if (!queryChanged) return;
+
     if (!query.trim()) {
       setExpanded(new Set());
       return;
@@ -103,17 +140,30 @@ export default function FeatureFlagsPage() {
     });
   };
 
-  const handleServiceToggle = (serviceKey, enabled) => {
-    setCatalog((prev) => setServiceEnabled(prev, serviceKey, enabled));
+  const handleServiceToggle = async (serviceKey) => {
+    setError(null);
+    setIsToggling(true);
+    try {
+      const data = await toggleService(serviceKey);
+      applyFlagsResponse(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to toggle service.');
+    } finally {
+      setIsToggling(false);
+    }
   };
 
-  const handleEndpointToggle = (serviceKey, endpointKey, enabled) => {
-    setCatalog((prev) => setEndpointEnabled(prev, serviceKey, endpointKey, enabled));
-  };
-
-  const handleCreateFlag = (payload) => {
-    setCatalog((prev) => upsertFlag(prev, payload));
-    setExpanded((prev) => new Set(prev).add(payload.serviceKey));
+  const handleEndpointToggle = async (endpoint) => {
+    setError(null);
+    setIsToggling(true);
+    try {
+      const data = await toggleEndpoint(endpoint.flag_name);
+      applyFlagsResponse(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to toggle endpoint.');
+    } finally {
+      setIsToggling(false);
+    }
   };
 
   return (
@@ -128,7 +178,16 @@ export default function FeatureFlagsPage() {
         />
 
         <main className="page">
-          <FlagToolbar query={query} onQueryChange={setQuery} onNewFlag={() => setModalOpen(true)} />
+          <FlagToolbar query={query} onQueryChange={setQuery} />
+
+          {error ? (
+            <div className="page-banner page-banner--error" role="alert">
+              <p>{error}</p>
+              <button type="button" className="secondary-btn" onClick={loadFlags} disabled={isLoading || isToggling}>
+                Retry
+              </button>
+            </div>
+          ) : null}
 
           <div className="stats-row" aria-label="Flag summary">
             <div className="stat-card">
@@ -145,7 +204,7 @@ export default function FeatureFlagsPage() {
             </div>
           </div>
 
-          <section className="table-shell" aria-label="Feature flags list">
+          <section className="table-shell" aria-label="Feature flags list" aria-busy={isLoading || isToggling}>
             <div className="table-shell__header">
               <div className="table-shell__col table-shell__col--service">Service / Endpoint</div>
               <div className="table-shell__col table-shell__col--deps">Dependencies</div>
@@ -154,27 +213,27 @@ export default function FeatureFlagsPage() {
             </div>
 
             <div className="table-shell__body">
-              {services.map((service) => (
-                <FlagRow
-                  key={service.serviceKey}
-                  service={service}
-                  expanded={expanded.has(service.serviceKey)}
-                  onToggleExpanded={() => handleToggleExpanded(service.serviceKey)}
-                  onServiceToggle={(enabled) => handleServiceToggle(service.serviceKey, enabled)}
-                  onEndpointToggle={(endpoint, enabled) => handleEndpointToggle(service.serviceKey, endpoint.endpointKey, enabled)}
-                />
-              ))}
+              {isLoading ? (
+                <p className="table-shell__message">Loading feature flags…</p>
+              ) : services.length === 0 ? (
+                <p className="table-shell__message">No feature flags found.</p>
+              ) : (
+                services.map((service) => (
+                  <FlagRow
+                    key={service.serviceKey}
+                    service={service}
+                    expanded={expanded.has(service.serviceKey)}
+                    disabled={isToggling}
+                    onToggleExpanded={() => handleToggleExpanded(service.serviceKey)}
+                    onServiceToggle={() => handleServiceToggle(service.serviceKey)}
+                    onEndpointToggle={(endpoint) => handleEndpointToggle(endpoint)}
+                  />
+                ))
+              )}
             </div>
           </section>
         </main>
       </div>
-
-      <NewFlagModal
-        open={modalOpen}
-        services={enrichCatalog(catalog)}
-        onClose={() => setModalOpen(false)}
-        onCreate={handleCreateFlag}
-      />
     </div>
   );
 }

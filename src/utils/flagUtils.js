@@ -7,11 +7,8 @@ export function normalizeCatalog(catalog) {
 
   for (const service of Object.values(next.services ?? {})) {
     for (const endpoint of Object.values(service.endpoints ?? {})) {
-      if (typeof endpoint.desiredEnabled !== 'boolean') {
-        endpoint.desiredEnabled = Boolean(endpoint.enabled);
-      }
       if (typeof endpoint.enabled !== 'boolean') {
-        endpoint.enabled = Boolean(endpoint.desiredEnabled);
+        endpoint.enabled = false;
       }
     }
   }
@@ -46,7 +43,7 @@ export function setServiceEnabled(catalog, serviceKey, enabled) {
   if (!service) return next;
 
   Object.values(service.endpoints ?? {}).forEach((endpoint) => {
-    endpoint.desiredEnabled = enabled;
+    endpoint.enabled = enabled;
   });
 
   return next;
@@ -57,7 +54,8 @@ export function setEndpointEnabled(catalog, serviceKey, endpointKey, enabled) {
   const endpoint = next.services?.[serviceKey]?.endpoints?.[endpointKey];
   if (!endpoint) return next;
 
-  endpoint.desiredEnabled = enabled;
+  endpoint.enabled = enabled;
+
   return next;
 }
 
@@ -86,92 +84,27 @@ export function upsertFlag(catalog, payload) {
     flag_name: `${serviceKey}.${payload.flagSlug}`,
     description: payload.description.trim(),
     enabled: Boolean(payload.enabled),
-    desiredEnabled: Boolean(payload.enabled),
     depends_on: payload.dependsOn.filter(Boolean),
   };
 
   return next;
 }
 
-function buildFlagMaps(catalog) {
-  const normalized = normalizeCatalog(catalog);
-  const flagMap = new Map();
-  const parentMap = new Map();
-
-  for (const [serviceKey, service] of Object.entries(normalized?.services ?? {})) {
-    for (const [endpointKey, endpoint] of Object.entries(service.endpoints ?? {})) {
-      const flagName = endpoint.flag_name;
-      flagMap.set(flagName, {
-        serviceKey,
-        endpointKey,
-        ...endpoint,
-      });
-      for (const dep of endpoint.depends_on ?? []) {
-        if (!parentMap.has(dep)) parentMap.set(dep, new Set());
-        parentMap.get(dep).add(flagName);
-      }
-    }
-  }
-
-  return { flagMap, parentMap };
-}
-
-function resolveEffectiveEnabled(flagName, flagMap, memo, trail = new Set()) {
-  if (memo.has(flagName)) return memo.get(flagName);
-  const flag = flagMap.get(flagName);
-  if (!flag) {
-    memo.set(flagName, false);
-    return false;
-  }
-
-  if (trail.has(flagName)) {
-    memo.set(flagName, false);
-    return false;
-  }
-
-  const desiredEnabled = typeof flag.desiredEnabled === 'boolean' ? flag.desiredEnabled : Boolean(flag.enabled);
-  if (!desiredEnabled) {
-    memo.set(flagName, false);
-    return false;
-  }
-
-  trail.add(flagName);
-  const deps = flag.depends_on ?? [];
-  const effective = deps.every((dep) => resolveEffectiveEnabled(dep, flagMap, memo, trail));
-  trail.delete(flagName);
-
-  memo.set(flagName, effective);
-  return effective;
-}
-
 export function enrichCatalog(catalog) {
   const services = flattenCatalog(catalog);
-  const { flagMap } = buildFlagMaps(catalog);
-  const memo = new Map();
 
   const servicesWithState = services.map((service) => {
     const endpoints = service.endpoints.map((endpoint) => {
-      const enabled = resolveEffectiveEnabled(endpoint.flag_name, flagMap, memo);
-      const desiredEnabled = typeof endpoint.desiredEnabled === 'boolean' ? endpoint.desiredEnabled : Boolean(endpoint.enabled);
       const dependencyStates = (endpoint.depends_on ?? []).map((depName) => {
-        const dependency = flagMap.get(depName);
-        const dependencyEnabled = resolveEffectiveEnabled(depName, flagMap, memo);
         return {
           name: depName,
-          enabled: dependencyEnabled,
-          exists: Boolean(dependency),
-          serviceKey: dependency?.serviceKey ?? null,
         };
       });
 
       return {
         ...endpoint,
-        enabled,
-        desiredEnabled,
-        rawEnabled: desiredEnabled,
+        desiredEnabled: endpoint.enabled,
         dependencyStates,
-        hasDisabledDependencies: dependencyStates.some((dep) => !dep.enabled),
-        isDependencyBlocked: desiredEnabled && !enabled,
       };
     });
 
@@ -185,7 +118,6 @@ export function enrichCatalog(catalog) {
       enabledCount,
       totalCount,
       status,
-      hasDisabledDependencies: endpoints.some((endpoint) => endpoint.hasDisabledDependencies),
     };
   });
 
@@ -208,13 +140,9 @@ export function findFlags(catalog, query) {
     .filter((service) => service.endpoints.length > 0 || service.serviceKey.toLowerCase().includes(needle) || service.description.toLowerCase().includes(needle));
 }
 
-export function getDependencyStatus(catalog, depName) {
-  const { flagMap, parentMap } = buildFlagMaps(catalog);
-  const memo = new Map();
-  const enabled = resolveEffectiveEnabled(depName, flagMap, memo);
+export function getDependencyStatus() {
   return {
-    enabled,
-    exists: flagMap.has(depName),
-    dependents: Array.from(parentMap.get(depName) ?? []),
+    exists: false,
+    dependents: [],
   };
 }

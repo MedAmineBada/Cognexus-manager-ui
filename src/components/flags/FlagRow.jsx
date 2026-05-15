@@ -1,4 +1,3 @@
-import React from 'react';
 import { Badge } from '../ui/Badge.jsx';
 import { Icon } from '../ui/Icons.jsx';
 import { ToggleSwitch } from '../ui/ToggleSwitch.jsx';
@@ -9,19 +8,18 @@ function statusTone(status) {
   return 'muted';
 }
 
-function dependencyTone(dep) {
-  if (!dep.exists) return 'muted';
-  return dep.enabled ? 'neutral' : 'danger';
+function dependencyTone() {
+  return 'neutral';
 }
 
-export function FlagRow({ service, expanded, onToggleExpanded, onServiceToggle, onEndpointToggle }) {
+export function FlagRow({ service, expanded, disabled = false, onToggleExpanded, onServiceToggle, onEndpointToggle }) {
   const total = service.totalCount || 0;
   const summary = total ? `${service.enabledCount}/${total} enabled` : 'No flags';
   const masterChecked = service.status === 'ACTIVE';
   const servicePanelId = `service-panel-${service.serviceKey}`;
 
   return (
-    <section className={`service-card ${service.hasDisabledDependencies ? 'service-card--dependency-warning' : ''}`}>
+    <section className="service-card">
       <div className="service-row">
         <button
           type="button"
@@ -34,23 +32,20 @@ export function FlagRow({ service, expanded, onToggleExpanded, onServiceToggle, 
             <Icon name={expanded ? 'chevron-down' : 'chevron-right'} className="row-icon" />
           </span>
 
-          <span className="service-row__main">
-            <span className="service-row__title-line">
-              <span className="service-row__service-key">{service.serviceKey}</span>
-            </span>
+          <span className="service-row__lead">
+            <span className="service-row__service-key">{service.serviceKey}</span>
             <span className="service-row__description">{service.description}</span>
-            <span className="service-row__summary">{summary}</span>
-          </span>
-
-          <span className="service-row__status">
-            <Badge tone={statusTone(service.status)}>{service.status}</Badge>
+            <span className="service-row__summary service-row__summary--inline">{summary}</span>
           </span>
         </button>
 
-        <div className="service-row__toggle" onClick={(e) => e.stopPropagation()}>
+        <div className="service-row__aside" onClick={(e) => e.stopPropagation()}>
+          <span className="service-row__summary service-row__summary--aside">{summary}</span>
+          <Badge tone={statusTone(service.status)}>{service.status}</Badge>
           <ToggleSwitch
             checked={masterChecked}
-            onChange={(checked) => onServiceToggle(checked)}
+            disabled={disabled}
+            onChange={() => onServiceToggle()}
             label={`Toggle ${service.serviceKey}`}
           />
         </div>
@@ -59,14 +54,14 @@ export function FlagRow({ service, expanded, onToggleExpanded, onServiceToggle, 
       {expanded ? (
         <div id={servicePanelId} className="endpoint-list">
           {service.endpoints.map((endpoint) => (
-            <div key={endpoint.flag_name} className={`endpoint-row ${endpoint.isDependencyBlocked ? 'endpoint-row--blocked' : ''}`}>
+            <div key={endpoint.flag_name} className="endpoint-row">
               <button
                 type="button"
                 className="endpoint-row__trigger"
-                onClick={() => onEndpointToggle(endpoint, !endpoint.desiredEnabled)}
-                aria-label={`${endpoint.desiredEnabled ? 'Disable' : 'Enable'} ${endpoint.flag_name}`}
+                onClick={() => !disabled && onEndpointToggle(endpoint)}
+                aria-label={`${endpoint.enabled ? 'Disable' : 'Enable'} ${endpoint.flag_name}`}
               >
-                <span className="endpoint-row__main">
+                <span className="endpoint-row__lead">
                   <span className="endpoint-row__key-line">
                     <Icon name="link" className="row-icon row-icon--small" />
                     <span className={`endpoint-row__flag ${endpoint.enabled ? 'is-on' : ''}`}>{endpoint.flag_name}</span>
@@ -79,8 +74,8 @@ export function FlagRow({ service, expanded, onToggleExpanded, onServiceToggle, 
                     endpoint.dependencyStates.map((dep) => (
                       <Badge
                         key={dep.name}
-                        tone={dependencyTone(dep)}
-                        className={`dependency-chip ${!dep.enabled ? 'dependency-chip--disabled' : ''}`}
+                        tone={dependencyTone()}
+                        className="dependency-chip"
                       >
                         {dep.name}
                       </Badge>
@@ -89,18 +84,18 @@ export function FlagRow({ service, expanded, onToggleExpanded, onServiceToggle, 
                     <span className="dependency-chip dependency-chip--empty">—</span>
                   )}
                 </span>
+              </button>
 
+              <div className="endpoint-row__controls" onClick={(e) => e.stopPropagation()}>
+                <ToggleSwitch
+                  checked={endpoint.enabled}
+                  disabled={disabled}
+                  onChange={() => onEndpointToggle(endpoint)}
+                  label={`Toggle ${endpoint.flag_name}`}
+                />
                 <span className="endpoint-row__status" aria-hidden="true">
                   <span className={`status-dot ${endpoint.enabled ? 'status-dot--on' : 'status-dot--off'}`} />
                 </span>
-              </button>
-
-              <div className="endpoint-row__toggle" onClick={(e) => e.stopPropagation()}>
-                <ToggleSwitch
-                  checked={endpoint.enabled}
-                  onChange={(checked) => onEndpointToggle(endpoint, checked)}
-                  label={`Toggle ${endpoint.flag_name}`}
-                />
               </div>
             </div>
           ))}

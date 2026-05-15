@@ -2,14 +2,13 @@ import React from 'react';
 import { Icon } from '../ui/Icons.jsx';
 
 const items = [
-  { label: 'Features', icon: 'toggle', active: true },
+  { label: 'Controls', icon: 'sliders', active: true },
   { label: 'Security', icon: 'shield' },
   { label: 'Insights', icon: 'chart' },
 ];
 
 const footerItems = [
-  { label: 'Settings', icon: 'settings' },
-  { label: 'Terminal', icon: 'terminal' },
+  { label: 'Logout', icon: 'logout' },
 ];
 
 export function Sidebar({ mobileOpen, onClose, isMobileNav }) {
@@ -19,10 +18,10 @@ export function Sidebar({ mobileOpen, onClose, isMobileNav }) {
 
       <aside className={`sidebar ${isMobileNav ? 'sidebar--mobile' : ''} ${mobileOpen ? 'is-open' : ''}`} aria-label="Main Navigation" aria-hidden={isMobileNav ? !mobileOpen : undefined}>
         <div className="sidebar__brand">
-          <div className="sidebar__logo">SM</div>
+          <div className="sidebar__logo">CN</div>
           <div>
-            <div className="sidebar__title">System Manager</div>
-            <div className="sidebar__subtitle">Control Center</div>
+            <div className="sidebar__title">Cognexus</div>
+            <div className="sidebar__subtitle">System Manager</div>
           </div>
         </div>
 
@@ -37,7 +36,7 @@ export function Sidebar({ mobileOpen, onClose, isMobileNav }) {
 
         <div className="sidebar__footer">
           {footerItems.map((item) => (
-            <button key={item.label} type="button" className="sidebar__item">
+            <button key={item.label} type="button" className={`sidebar__item ${item.label === 'Logout' ? 'sidebar__item--logout' : ''}`}>
               <Icon name={item.icon} className="sidebar__icon" />
               <span>{item.label}</span>
             </button>
