@@ -201,10 +201,8 @@ export async function login(email, password) {
 export async function logout() {
   try {
     // Call server logout endpoint to clear HttpOnly cookie
-    await fetch(`${API_URL}/auth/logout`, {
+    await authenticatedFetch(`${API_URL}/auth/logout`, {
       method: "POST",
-      headers: getAuthHeader(),
-      credentials: "include", // Include cookies in request
     });
   } catch (error) {
     console.error("Logout API call failed:", error);
@@ -213,7 +211,7 @@ export async function logout() {
     // Always clear client-side tokens
     clearAuth();
     // Redirect to login
-    window.location.href = "/login";
+    window.location.href = "/";
   }
 }
 
@@ -227,6 +225,96 @@ export function getAuthConfig() {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     credentials: "include", // Always include cookies (for HttpOnly refresh token)
   };
+}
+
+/**
+ * Refresh access token using the refresh token cookie
+ * @returns {Promise<boolean>} - True if refresh was successful, false otherwise
+ */
+export async function refreshAccessToken() {
+  try {
+    const response = await fetch(`${API_URL}/auth/refresh`, {
+      method: "POST",
+      credentials: "include", // Include HttpOnly refresh token cookie
+    });
+
+    if (!response.ok) {
+      console.error("Token refresh failed:", response.status);
+      return false;
+    }
+
+    const data = await response.json();
+
+    if (data.access_token) {
+      setAccessToken(data.access_token);
+      console.log("Access token refreshed successfully");
+      return true;
+    }
+
+    console.error("No access token in refresh response");
+    return false;
+  } catch (error) {
+    console.error("Token refresh error:", error);
+    return false;
+  }
+}
+
+/**
+ * Perform an authenticated API request with automatic token refresh
+ * @param {string} url - The API endpoint URL
+ * @param {object} options - Fetch options
+ * @returns {Promise<Response>} - The fetch response
+ */
+export async function authenticatedFetch(url, options = {}) {
+  const accessToken = getAccessToken();
+
+  // If no access token, try to refresh first
+  if (!accessToken) {
+    console.log("No access token found, attempting refresh...");
+    const refreshed = await refreshAccessToken();
+    if (!refreshed) {
+      throw new Error("Authentication required. Please login.");
+    }
+  }
+
+  // Add authorization header
+  const token = getAccessToken();
+  const headers = {
+    ...options.headers,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  // First attempt
+  let response = await fetch(url, {
+    ...options,
+    headers,
+    credentials: "include",
+  });
+
+  // If 401, try to refresh token and retry once
+  if (response.status === 401) {
+    console.log("Received 401, attempting token refresh...");
+    const refreshed = await refreshAccessToken();
+
+    if (!refreshed) {
+      // Refresh failed, clear auth and throw error
+      clearAuth();
+      throw new Error("Authentication expired. Please login again.");
+    }
+
+    // Retry the request with new token
+    const newToken = getAccessToken();
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${newToken}`,
+      },
+      credentials: "include",
+    });
+  }
+
+  return response;
 }
 
 /**
