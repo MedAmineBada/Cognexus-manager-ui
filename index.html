@@ -2,16 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/cognexus-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>manager-ui</title>
+    <title>Cognexus Manager</title>
     <script>
       (function () {
-        var key = 'feature-flags-theme';
+        var key = "feature-flags-theme";
         var saved = localStorage.getItem(key);
-        var theme = saved === 'dark' || saved === 'light' ? saved : 'light';
+        var theme = saved === "dark" || saved === "light" ? saved : "light";
         var root = document.documentElement;
-        if (theme === 'dark') root.classList.add('dark');
+        if (theme === "dark") root.classList.add("dark");
         root.dataset.theme = theme;
       })();
     </script>

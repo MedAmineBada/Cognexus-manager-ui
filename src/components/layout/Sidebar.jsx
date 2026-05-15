@@ -1,24 +1,37 @@
-import React from 'react';
-import { Icon } from '../ui/Icons.jsx';
+import React from "react";
+import { Icon } from "../ui/Icons.jsx";
 
 const items = [
-  { label: 'Controls', icon: 'sliders', active: true },
-  { label: 'Security', icon: 'shield' },
-  { label: 'Insights', icon: 'chart' },
+  { label: "Controls", icon: "sliders", active: true },
+  { label: "Security", icon: "shield" },
+  { label: "Insights", icon: "chart" },
 ];
 
-const footerItems = [
-  { label: 'Logout', icon: 'logout' },
-];
+const footerItems = [{ label: "Logout", icon: "logout" }];
 
 export function Sidebar({ mobileOpen, onClose, isMobileNav }) {
   return (
     <>
-      {isMobileNav ? <button type="button" className={`sidebar-overlay ${mobileOpen ? 'is-open' : ''}`} aria-label="Close sidebar" onClick={onClose} /> : null}
+      {isMobileNav ? (
+        <button
+          type="button"
+          className={`sidebar-overlay ${mobileOpen ? "is-open" : ""}`}
+          aria-label="Close sidebar"
+          onClick={onClose}
+        />
+      ) : null}
 
-      <aside className={`sidebar ${isMobileNav ? 'sidebar--mobile' : ''} ${mobileOpen ? 'is-open' : ''}`} aria-label="Main Navigation" aria-hidden={isMobileNav ? !mobileOpen : undefined}>
+      <aside
+        className={`sidebar ${isMobileNav ? "sidebar--mobile" : ""} ${mobileOpen ? "is-open" : ""}`}
+        aria-label="Main Navigation"
+        aria-hidden={isMobileNav ? !mobileOpen : undefined}
+      >
         <div className="sidebar__brand">
-          <div className="sidebar__logo">CN</div>
+          <img
+            src="/cognexus-logo.png"
+            alt="Cognexus"
+            className="sidebar__logo-img"
+          />
           <div>
             <div className="sidebar__title">Cognexus</div>
             <div className="sidebar__subtitle">System Manager</div>
@@ -27,7 +40,11 @@ export function Sidebar({ mobileOpen, onClose, isMobileNav }) {
 
         <nav className="sidebar__nav" aria-label="Sections">
           {items.map((item) => (
-            <button key={item.label} type="button" className={`sidebar__item ${item.active ? 'is-active' : ''}`}>
+            <button
+              key={item.label}
+              type="button"
+              className={`sidebar__item ${item.active ? "is-active" : ""}`}
+            >
               <Icon name={item.icon} className="sidebar__icon" />
               <span>{item.label}</span>
             </button>
@@ -36,7 +53,11 @@ export function Sidebar({ mobileOpen, onClose, isMobileNav }) {
 
         <div className="sidebar__footer">
           {footerItems.map((item) => (
-            <button key={item.label} type="button" className={`sidebar__item ${item.label === 'Logout' ? 'sidebar__item--logout' : ''}`}>
+            <button
+              key={item.label}
+              type="button"
+              className={`sidebar__item ${item.label === "Logout" ? "sidebar__item--logout" : ""}`}
+            >
               <Icon name={item.icon} className="sidebar__icon" />
               <span>{item.label}</span>
             </button>

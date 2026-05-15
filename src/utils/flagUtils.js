@@ -1,5 +1,7 @@
 export function deepClone(value) {
-  return typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));
+  return typeof structuredClone === "function"
+    ? structuredClone(value)
+    : JSON.parse(JSON.stringify(value));
 }
 
 export function normalizeCatalog(catalog) {
@@ -7,7 +9,7 @@ export function normalizeCatalog(catalog) {
 
   for (const service of Object.values(next.services ?? {})) {
     for (const endpoint of Object.values(service.endpoints ?? {})) {
-      if (typeof endpoint.enabled !== 'boolean') {
+      if (typeof endpoint.enabled !== "boolean") {
         endpoint.enabled = false;
       }
     }
@@ -23,15 +25,19 @@ export function flattenCatalog(catalog) {
   return Object.entries(services).map(([serviceKey, service]) => ({
     serviceKey,
     description: service.description,
-    endpoints: Object.entries(service.endpoints ?? {}).map(([endpointKey, endpoint]) => ({
-      endpointKey,
-      ...endpoint,
-    })),
+    endpoints: Object.entries(service.endpoints ?? {}).map(
+      ([endpointKey, endpoint]) => ({
+        endpointKey,
+        ...endpoint,
+      }),
+    ),
   }));
 }
 
 export function countFlags(catalog) {
-  const endpoints = enrichCatalog(catalog).flatMap((service) => service.endpoints);
+  const endpoints = enrichCatalog(catalog).flatMap(
+    (service) => service.endpoints,
+  );
   const total = endpoints.length;
   const enabled = endpoints.filter((flag) => flag.enabled).length;
   return { total, enabled, disabled: total - enabled };
@@ -63,8 +69,8 @@ export function createServiceKeyFromName(name) {
   return name
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
 }
 
 export function upsertFlag(catalog, payload) {
@@ -96,8 +102,11 @@ export function enrichCatalog(catalog) {
   const servicesWithState = services.map((service) => {
     const endpoints = service.endpoints.map((endpoint) => {
       const dependencyStates = (endpoint.depends_on ?? []).map((depName) => {
+        // Find the service that this dependency refers to
+        const depService = services.find((s) => s.serviceKey === depName);
         return {
           name: depName,
+          enabled: depService ? depService.status !== "INACTIVE" : false,
         };
       });
 
@@ -108,9 +117,16 @@ export function enrichCatalog(catalog) {
       };
     });
 
-    const enabledCount = endpoints.filter((endpoint) => endpoint.enabled).length;
+    const enabledCount = endpoints.filter(
+      (endpoint) => endpoint.enabled,
+    ).length;
     const totalCount = endpoints.length;
-    const status = enabledCount === 0 ? 'INACTIVE' : enabledCount === totalCount ? 'ACTIVE' : 'PARTIAL';
+    const status =
+      enabledCount === 0
+        ? "INACTIVE"
+        : enabledCount === totalCount
+          ? "ACTIVE"
+          : "PARTIAL";
 
     return {
       ...service,
@@ -130,14 +146,28 @@ export function findFlags(catalog, query) {
 
   return enrichCatalog(catalog)
     .map((service) => {
-      const serviceMatch = service.serviceKey.toLowerCase().includes(needle) || service.description.toLowerCase().includes(needle);
+      const serviceMatch =
+        service.serviceKey.toLowerCase().includes(needle) ||
+        service.description.toLowerCase().includes(needle);
       const endpoints = service.endpoints.filter((endpoint) => {
-        const haystack = [endpoint.endpointKey, endpoint.flag_name, endpoint.description, ...(endpoint.depends_on ?? [])].join(' ').toLowerCase();
+        const haystack = [
+          endpoint.endpointKey,
+          endpoint.flag_name,
+          endpoint.description,
+          ...(endpoint.depends_on ?? []),
+        ]
+          .join(" ")
+          .toLowerCase();
         return haystack.includes(needle) || serviceMatch;
       });
       return { ...service, endpoints };
     })
-    .filter((service) => service.endpoints.length > 0 || service.serviceKey.toLowerCase().includes(needle) || service.description.toLowerCase().includes(needle));
+    .filter(
+      (service) =>
+        service.endpoints.length > 0 ||
+        service.serviceKey.toLowerCase().includes(needle) ||
+        service.description.toLowerCase().includes(needle),
+    );
 }
 
 export function getDependencyStatus() {

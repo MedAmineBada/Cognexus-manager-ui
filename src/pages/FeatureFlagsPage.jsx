@@ -209,7 +209,6 @@ export default function FeatureFlagsPage() {
               <div className="table-shell__col table-shell__col--service">Service / Endpoint</div>
               <div className="table-shell__col table-shell__col--deps">Dependencies</div>
               <div className="table-shell__col table-shell__col--status">Status</div>
-              <div className="table-shell__col table-shell__col--toggle">Master</div>
             </div>
 
             <div className="table-shell__body">
