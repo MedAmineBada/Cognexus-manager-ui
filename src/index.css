@@ -1,9 +1,10 @@
 :root {
   --bg: #ffffff;
+  --main-bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f0f4ff;
-  --surface-3: #e0e8ff;
-  --surface-4: #d0dcff;
+  --surface-2: #f6f7f9;
+  --surface-3: #eef0f3;
+  --surface-4: #e2e5ea;
   --primary: #0066ff;
   --primary-light: #3385ff;
   --primary-dark: #0052cc;
@@ -18,7 +19,9 @@
   --success: #10b981;
   --gradient-primary: linear-gradient(135deg, #0066ff 0%, #3385ff 50%, #0052cc 100%);
   --gradient-sidebar: linear-gradient(180deg, #f0f4ff 0%, #e0e8ff 100%);
-  --shadow: 0 1px 0 rgba(15, 23, 42, 0.06), 0 10px 30px rgba(15, 23, 42, 0.08);
+  --gradient-login-bg: linear-gradient(135deg, #ffffff 0%, #e8f0ff 30%, #f0f4ff 50%, #e0e8ff 70%, #ffffff 100%);
+  --gradient-login-card: linear-gradient(135deg, #ffffff 0%, #f0f4ff 35%, #e8f0ff 65%, #f5f8ff 100%);
+  --shadow: 0 1px 0 rgba(15, 23, 42, 0.045), 0 10px 30px rgba(15, 23, 42, 0.06);
   --sidebar-width: 264px;
   --topbar-height: 60px;
   --radius: 6px;
@@ -78,6 +81,7 @@ html.dark {
   --outline-variant: #424654;
 
   --bg: var(--background);
+  --main-bg: var(--background);
   --surface-2: #111827;
   --surface-3: #1e293b;
   --surface-4: #334155;
@@ -92,7 +96,9 @@ html.dark {
   --success: #34d399;
   --gradient-primary: linear-gradient(135deg, #4d8aff 0%, #6ba1ff 50%, #3375ff 100%);
   --gradient-sidebar: linear-gradient(180deg, #111827 0%, #0f172a 100%);
-  --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 18px 34px rgba(0, 0, 0, 0.4);
+  --gradient-login-bg: linear-gradient(135deg, var(--background) 0%, #111827 50%, var(--background) 100%);
+  --gradient-login-card: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.225), 0 18px 34px rgba(0, 0, 0, 0.3);
 }
 
 *,
@@ -112,7 +118,11 @@ body {
   min-height: 100vh;
   font-family: var(--font);
   color: var(--text);
-  background: var(--bg);
+  background-color: var(--main-bg);
+}
+
+#root {
+  background-color: inherit;
 }
 
 button,
@@ -136,7 +146,7 @@ svg {
 .app-shell {
   min-height: 100vh;
   display: flex;
-  background: var(--bg);
+  background-color: var(--main-bg);
 }
 
 .sidebar {
@@ -148,7 +158,7 @@ svg {
   padding: 16px 10px 12px;
   background: var(--gradient-sidebar);
   border-right: 1px solid var(--border);
-  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.225);
 }
 
 .sidebar__brand {
@@ -169,7 +179,7 @@ svg {
   background: var(--gradient-primary);
   color: var(--primary-contrast);
   font-weight: 800;
-  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.225);
 }
 
 .sidebar__logo-img {
@@ -237,7 +247,7 @@ svg {
   background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
   color: var(--primary-contrast);
   border-left: 2px solid var(--primary-dark);
-  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.1875);
 }
 
 .sidebar__icon {
@@ -250,6 +260,7 @@ svg {
   margin-left: var(--sidebar-width);
   min-width: 0;
   flex: 1;
+  background-color: var(--main-bg);
 }
 
 .topbar {
@@ -263,9 +274,29 @@ svg {
   gap: 16px;
   padding: 10px 16px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  background-color: var(--surface);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+}
+
+html.dark .topbar {
+  background-color: var(--surface);
+  background-image: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+html.dark .icon-btn:hover {
+  background-color: var(--surface-3);
+  background-image: none;
+}
+
+html.dark .stat-card {
+  background-color: var(--surface);
+  background-image: none;
+}
+
+html.dark .table-shell {
+  background-color: var(--surface);
+  background-image: none;
 }
 
 .topbar__crumbs {
@@ -332,7 +363,7 @@ svg {
 }
 
 .icon-btn:hover {
-  background: linear-gradient(135deg, var(--surface-3) 0%, var(--surface-4) 100%);
+  background-color: var(--surface-3);
   color: var(--primary);
   transform: scale(1.05);
   transition: all 0.2s ease;
@@ -367,6 +398,8 @@ svg {
 
 .page {
   padding: 16px;
+  background-color: var(--main-bg);
+  min-height: calc(100vh - var(--topbar-height));
 }
 
 .page-toolbar {
@@ -433,7 +466,7 @@ svg {
 .search-field__input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(77, 138, 255, 0.25);
-  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  background-color: var(--surface);
 }
 
 .primary-btn,
@@ -452,14 +485,14 @@ svg {
 .primary-btn {
   background: var(--gradient-primary);
   color: var(--primary-contrast);
-  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.1875);
   transition: all 0.2s ease;
 }
 
 .primary-btn:hover {
   filter: brightness(1.12);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .secondary-btn {
@@ -484,14 +517,14 @@ svg {
   padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+  background-color: var(--surface);
   box-shadow: var(--shadow);
   transition: all 0.2s ease;
 }
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.225);
   border-color: var(--primary-soft);
 }
 
@@ -519,7 +552,7 @@ svg {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  background-color: var(--surface);
   box-shadow: var(--shadow);
 }
 
@@ -529,7 +562,7 @@ svg {
   align-items: center;
   min-height: 42px;
   padding: 0 14px;
-  background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 100%);
+  background-color: var(--surface-2);
   border-bottom: 1px solid var(--border);
   color: color-mix(in srgb, var(--text) 85%, var(--muted));
   font-size: 0.72rem;
@@ -698,7 +731,7 @@ svg {
 }
 
 .endpoint-list {
-  background: color-mix(in srgb, var(--surface-2) 60%, var(--surface));
+  background-color: var(--surface-2);
   border-top: 1px solid var(--border);
 }
 
@@ -846,7 +879,7 @@ svg {
 
 .toggle--on {
   background: var(--gradient-primary);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .toggle__thumb {
@@ -857,7 +890,7 @@ svg {
   top: 2px;
   left: 2px;
   background: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.135);
   transition: transform 0.15s ease;
 }
 
@@ -880,7 +913,7 @@ svg {
   background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
   border-radius: 12px;
   border: 1px solid var(--border);
-  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.375);
   overflow: hidden;
 }
 
@@ -1075,7 +1108,7 @@ svg {
   width: min(82vw, 300px);
   max-width: 300px;
   z-index: 39;
-  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.135);
 }
 
 .sidebar--mobile.is-open {
@@ -1139,7 +1172,7 @@ svg {
     transform: translateX(-102%);
     transition: transform 0.22s ease;
     z-index: 39;
-    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.135);
   }
 
   .sidebar.is-open {
@@ -1360,4 +1393,485 @@ svg {
   .form-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Login screen */
+.login-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--gradient-login-bg);
+  color: var(--text);
+  position: relative;
+}
+
+.login-shell__theme {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.login-shell__main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px 32px;
+}
+
+.login-canvas {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.login-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.login-brand__logo {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  transition: transform 0.3s ease;
+}
+
+.login-brand__logo:hover {
+  transform: scale(1.05);
+}
+
+.login-brand__title {
+  margin: 0;
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 4px rgba(0, 102, 255, 0.15));
+}
+
+.login-brand__subtitle {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--muted);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.login-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 40px;
+  background: var(--gradient-login-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.login-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.225);
+  border-color: var(--primary-soft);
+}
+
+/* Login Spinner Overlay */
+.login-spinner-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+.login-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 48px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.login-spinner__ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-right-color: var(--primary-light);
+  animation: spin 0.8s linear infinite;
+}
+
+.login-spinner__text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.login-card__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+}
+
+.login-card__title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.login-card__subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.login-card__form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-card__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.login-card__input {
+  min-height: 44px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.login-card__input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+  background: var(--surface-2);
+}
+
+.login-card__password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-card__password-input {
+  padding-right: 44px;
+}
+
+.login-card__password-toggle {
+  position: absolute;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.login-card__password-toggle:hover {
+  background: var(--surface-3);
+  color: var(--primary);
+  transform: scale(1.05);
+}
+
+.login-card__password-toggle-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.login-card__submit {
+  width: 100%;
+  min-height: 48px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .login-card {
+    padding: 24px 20px;
+  }
+}
+
+/* Error Popup */
+.error-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+.error-popup {
+  width: min(420px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.225);
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+.error-popup__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--danger-soft) 0%, var(--surface) 100%);
+}
+
+.error-popup__icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.error-popup__icon-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.error-popup__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+}
+
+.error-popup__close {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.error-popup__close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.error-popup__close-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.error-popup__message {
+  margin: 0;
+  padding: 20px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.error-popup__action {
+  width: calc(100% - 40px);
+  margin: 0 20px 20px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  background: var(--gradient-primary);
+  color: var(--primary-contrast);
+  border: 0;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.error-popup__action:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.225);
+}
+
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Controls /features page — all solid backgrounds in light mode */
+.app-shell--controls {
+  --main-bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f6f7f9;
+  --surface-3: #eef0f3;
+  background-color: #ffffff;
+  background-image: none;
+}
+
+html:has(.app-shell--controls) {
+  background-color: #ffffff;
+  background-image: none;
+}
+
+html:has(.app-shell--controls) body,
+html:has(.app-shell--controls) #root {
+  background-color: #ffffff;
+  background-image: none;
+}
+
+.app-shell--controls .app-shell__main,
+.app-shell--controls main.page {
+  background-color: #ffffff;
+  background-image: none;
+}
+
+.app-shell--controls .topbar {
+  background-color: #ffffff;
+  background-image: none;
+}
+
+.app-shell--controls .stat-card,
+.app-shell--controls .table-shell {
+  background-color: #ffffff;
+  background-image: none;
+}
+
+.app-shell--controls .service-row,
+.app-shell--controls .service-row__trigger {
+  background-color: #ffffff;
+  background-image: none;
+}
+
+.app-shell--controls .table-shell__header {
+  background-color: #f6f7f9;
+  background-image: none;
+}
+
+.app-shell--controls .endpoint-list {
+  background-color: #f6f7f9;
+  background-image: none;
+}
+
+.app-shell--controls .service-row__trigger:hover,
+.app-shell--controls .endpoint-row__trigger:hover {
+  background-color: #f6f7f9;
+  background-image: none;
+}
+
+.app-shell--controls .badge--blue {
+  background: var(--primary-soft);
+  background-image: none;
+}
+
+.app-shell--controls .badge--danger {
+  background: var(--danger-soft);
+  background-image: none;
+}
+
+html.dark .app-shell--controls {
+  --main-bg: var(--background);
+  --surface: #121316;
+  --surface-2: #1a1b1e;
+  --surface-3: #1e293b;
+  background-color: var(--background);
+}
+
+html.dark:has(.app-shell--controls),
+html.dark:has(.app-shell--controls) body,
+html.dark:has(.app-shell--controls) #root {
+  background-color: var(--background);
+}
+
+html.dark .app-shell--controls .app-shell__main,
+html.dark .app-shell--controls main.page,
+html.dark .app-shell--controls .topbar,
+html.dark .app-shell--controls .stat-card,
+html.dark .app-shell--controls .table-shell,
+html.dark .app-shell--controls .service-row,
+html.dark .app-shell--controls .service-row__trigger {
+  background-color: var(--surface);
+  background-image: none;
+}
+
+html.dark .app-shell--controls .table-shell__header,
+html.dark .app-shell--controls .endpoint-list {
+  background-color: var(--surface-2);
+}
+
+html.dark .app-shell--controls .service-row__trigger:hover,
+html.dark .app-shell--controls .endpoint-row__trigger:hover {
+  background-color: var(--surface-2);
 }

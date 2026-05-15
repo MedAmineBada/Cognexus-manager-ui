@@ -1,5 +1,5 @@
-import React from "react";
 import { Icon } from "../ui/Icons.jsx";
+import { logout } from "../../api/auth.js";
 
 const items = [
   { label: "Controls", icon: "sliders", active: true },
@@ -10,6 +10,10 @@ const items = [
 const footerItems = [{ label: "Logout", icon: "logout" }];
 
 export function Sidebar({ mobileOpen, onClose, isMobileNav }) {
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
     <>
       {isMobileNav ? (
@@ -57,6 +61,7 @@ export function Sidebar({ mobileOpen, onClose, isMobileNav }) {
               key={item.label}
               type="button"
               className={`sidebar__item ${item.label === "Logout" ? "sidebar__item--logout" : ""}`}
+              onClick={item.label === "Logout" ? handleLogout : undefined}
             >
               <Icon name={item.icon} className="sidebar__icon" />
               <span>{item.label}</span>

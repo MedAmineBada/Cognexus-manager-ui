@@ -1,15 +1,26 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { getFlags, toggleEndpoint, toggleService } from '../api/flagsApi.js';
-import { countFlags, enrichCatalog, findFlags, normalizeCatalog } from '../utils/flagUtils.js';
-import { applyTheme, persistTheme, readStoredTheme } from '../utils/theme.js';
-import { Sidebar } from '../components/layout/Sidebar.jsx';
-import { TopBar } from '../components/layout/TopBar.jsx';
-import { FlagToolbar } from '../components/flags/FlagToolbar.jsx';
-import { FlagRow } from '../components/flags/FlagRow.jsx';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { getFlags, toggleEndpoint, toggleService } from "../api/flagsApi.js";
+import {
+  countFlags,
+  enrichCatalog,
+  findFlags,
+  normalizeCatalog,
+} from "../utils/flagUtils.js";
+import { useTheme } from "../hooks/useTheme.js";
+import { Sidebar } from "../components/layout/Sidebar.jsx";
+import { TopBar } from "../components/layout/TopBar.jsx";
+import { FlagToolbar } from "../components/flags/FlagToolbar.jsx";
+import { FlagRow } from "../components/flags/FlagRow.jsx";
 
 function useMediaQuery(query) {
   const getMatches = () => {
-    if (typeof window === 'undefined') return false;
+    if (typeof window === "undefined") return false;
     return window.matchMedia(query).matches;
   };
 
@@ -21,14 +32,14 @@ function useMediaQuery(query) {
 
     updateMatch();
     if (mediaQueryList.addEventListener) {
-      mediaQueryList.addEventListener('change', updateMatch);
+      mediaQueryList.addEventListener("change", updateMatch);
     } else {
       mediaQueryList.addListener(updateMatch);
     }
 
     return () => {
       if (mediaQueryList.removeEventListener) {
-        mediaQueryList.removeEventListener('change', updateMatch);
+        mediaQueryList.removeEventListener("change", updateMatch);
       } else {
         mediaQueryList.removeListener(updateMatch);
       }
@@ -50,17 +61,19 @@ function catalogStats(catalog, apiMeta) {
 }
 
 export default function FeatureFlagsPage() {
-  const [catalog, setCatalog] = useState(() => normalizeCatalog({ services: {} }));
+  const [catalog, setCatalog] = useState(() =>
+    normalizeCatalog({ services: {} }),
+  );
   const [apiMeta, setApiMeta] = useState(null);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [expanded, setExpanded] = useState(() => new Set());
-  const [theme, setTheme] = useState(readStoredTheme);
+  const { theme, toggleTheme } = useTheme();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isToggling, setIsToggling] = useState(false);
   const [error, setError] = useState(null);
   const previousQueryRef = useRef(query);
-  const isMobileNav = useMediaQuery('(max-width: 920px)');
+  const isMobileNav = useMediaQuery("(max-width: 920px)");
 
   const applyFlagsResponse = useCallback((data) => {
     setCatalog(normalizeCatalog(data));
@@ -78,7 +91,9 @@ export default function FeatureFlagsPage() {
       const data = await getFlags();
       applyFlagsResponse(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load feature flags.');
+      setError(
+        err instanceof Error ? err.message : "Failed to load feature flags.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -88,16 +103,16 @@ export default function FeatureFlagsPage() {
     loadFlags();
   }, [loadFlags]);
 
-  const stats = useMemo(() => catalogStats(catalog, apiMeta), [catalog, apiMeta]);
+  const stats = useMemo(
+    () => catalogStats(catalog, apiMeta),
+    [catalog, apiMeta],
+  );
   const services = useMemo(() => {
-    const list = query.trim() ? findFlags(catalog, query) : enrichCatalog(catalog);
+    const list = query.trim()
+      ? findFlags(catalog, query)
+      : enrichCatalog(catalog);
     return list;
   }, [catalog, query]);
-
-  useEffect(() => {
-    applyTheme(theme);
-    persistTheme(theme);
-  }, [theme]);
 
   useEffect(() => {
     if (!isMobileNav) setMobileNavOpen(false);
@@ -107,7 +122,7 @@ export default function FeatureFlagsPage() {
     if (!isMobileNav) return undefined;
     const previousOverflow = document.body.style.overflow;
     if (mobileNavOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = previousOverflow;
     }
@@ -147,7 +162,9 @@ export default function FeatureFlagsPage() {
       const data = await toggleService(serviceKey);
       applyFlagsResponse(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to toggle service.');
+      setError(
+        err instanceof Error ? err.message : "Failed to toggle service.",
+      );
     } finally {
       setIsToggling(false);
     }
@@ -160,19 +177,27 @@ export default function FeatureFlagsPage() {
       const data = await toggleEndpoint(endpoint.flag_name);
       applyFlagsResponse(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to toggle endpoint.');
+      setError(
+        err instanceof Error ? err.message : "Failed to toggle endpoint.",
+      );
     } finally {
       setIsToggling(false);
     }
   };
 
   return (
-    <div className={`app-shell ${mobileNavOpen ? 'app-shell--nav-open' : ''}`}>
-      <Sidebar mobileOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} isMobileNav={isMobileNav} />
+    <div
+      className={`app-shell app-shell--controls ${mobileNavOpen ? "app-shell--nav-open" : ""}`}
+    >
+      <Sidebar
+        mobileOpen={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+        isMobileNav={isMobileNav}
+      />
       <div className="app-shell__main">
         <TopBar
           theme={theme}
-          onToggleTheme={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+          onToggleTheme={toggleTheme}
           isMobileNav={isMobileNav}
           onToggleMobileNav={() => setMobileNavOpen((current) => !current)}
         />
@@ -183,7 +208,12 @@ export default function FeatureFlagsPage() {
           {error ? (
             <div className="page-banner page-banner--error" role="alert">
               <p>{error}</p>
-              <button type="button" className="secondary-btn" onClick={loadFlags} disabled={isLoading || isToggling}>
+              <button
+                type="button"
+                className="secondary-btn"
+                onClick={loadFlags}
+                disabled={isLoading || isToggling}
+              >
                 Retry
               </button>
             </div>
@@ -204,11 +234,21 @@ export default function FeatureFlagsPage() {
             </div>
           </div>
 
-          <section className="table-shell" aria-label="Feature flags list" aria-busy={isLoading || isToggling}>
+          <section
+            className="table-shell"
+            aria-label="Feature flags list"
+            aria-busy={isLoading || isToggling}
+          >
             <div className="table-shell__header">
-              <div className="table-shell__col table-shell__col--service">Service / Endpoint</div>
-              <div className="table-shell__col table-shell__col--deps">Dependencies</div>
-              <div className="table-shell__col table-shell__col--status">Status</div>
+              <div className="table-shell__col table-shell__col--service">
+                Service / Endpoint
+              </div>
+              <div className="table-shell__col table-shell__col--deps">
+                Dependencies
+              </div>
+              <div className="table-shell__col table-shell__col--status">
+                Status
+              </div>
             </div>
 
             <div className="table-shell__body">
@@ -223,9 +263,15 @@ export default function FeatureFlagsPage() {
                     service={service}
                     expanded={expanded.has(service.serviceKey)}
                     disabled={isToggling}
-                    onToggleExpanded={() => handleToggleExpanded(service.serviceKey)}
-                    onServiceToggle={() => handleServiceToggle(service.serviceKey)}
-                    onEndpointToggle={(endpoint) => handleEndpointToggle(endpoint)}
+                    onToggleExpanded={() =>
+                      handleToggleExpanded(service.serviceKey)
+                    }
+                    onServiceToggle={() =>
+                      handleServiceToggle(service.serviceKey)
+                    }
+                    onEndpointToggle={(endpoint) =>
+                      handleEndpointToggle(endpoint)
+                    }
                   />
                 ))
               )}
