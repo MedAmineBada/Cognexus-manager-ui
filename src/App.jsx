@@ -1,5 +1,6 @@
 import FeatureFlagsPage from "./pages/FeatureFlagsPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
 import { useAppRouter } from "./hooks/useAppRouter.js";
 import { useIdleLogout } from "./hooks/useIdleLogout.js";
 
@@ -17,6 +18,10 @@ export default function App() {
     return <FeatureFlagsPage />;
   }
 
-  // For register and init routes, show login for now (can be expanded later)
+  if (route === "register") {
+    return <RegisterPage navigate={navigate} />;
+  }
+
+  // For init and login routes, show login
   return <LoginPage navigate={navigate} />;
 }

@@ -153,6 +153,14 @@ export async function login(email, password) {
       };
     }
 
+    if (response.status === 500) {
+      console.log("500 Server error");
+      return {
+        success: false,
+        error: "Something went wrong in the backend. Please try again later.",
+      };
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.log("Other error status:", response.status, errorData);
@@ -184,6 +192,110 @@ export async function login(email, password) {
     };
   } catch (error) {
     console.error("Login error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Network error. Please check your connection.",
+    };
+  }
+}
+
+/**
+ * Register handler
+ * @param {string} name - User full name
+ * @param {string} email - User email
+ * @param {string} password - User password
+ * @param {string} code - Invitation code
+ * @returns {Promise<{success: boolean, data?: object, error?: string, statusCode?: number}>}
+ */
+export async function register(name, email, password, code) {
+  try {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name,
+        email: email,
+        password: password,
+        code: code,
+      }),
+    });
+
+    console.log("Register response status:", response.status);
+
+    // Handle different error status codes
+    if (response.status === 422) {
+      const errorData = await response.json().catch(() => ({}));
+      console.log("422 Error data:", errorData);
+      return {
+        success: false,
+        error:
+          errorData.detail ||
+          errorData.message ||
+          "Validation failed. Please check your input.",
+        statusCode: 422,
+      };
+    }
+
+    if (response.status === 401) {
+      const errorData = await response.json().catch(() => ({}));
+      console.log("401 Error data:", errorData);
+      return {
+        success: false,
+        error:
+          "Invalid invitation code. Please contact an administrator for a valid code.",
+        statusCode: 401,
+      };
+    }
+
+    if (response.status === 409) {
+      const errorData = await response.json().catch(() => ({}));
+      console.log("409 Error data:", errorData);
+      return {
+        success: false,
+        error:
+          errorData.error ||
+          errorData.message ||
+          "A user with this email address already exists.",
+        statusCode: 409,
+      };
+    }
+
+    if (response.status === 500) {
+      console.log("500 Server error");
+      return {
+        success: false,
+        error: "Something went wrong in the backend. Please try again later.",
+        statusCode: 500,
+      };
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.log("Other error status:", response.status, errorData);
+      return {
+        success: false,
+        error:
+          errorData.error ||
+          errorData.message ||
+          "Registration failed. Please try again.",
+      };
+    }
+
+    // Successful registration
+    const data = await response.json();
+    console.log("Registration successful:", data);
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error("Register error:", error);
     return {
       success: false,
       error:

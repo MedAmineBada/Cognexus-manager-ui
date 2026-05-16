@@ -474,6 +474,47 @@ export function Icon({ name, className = "" }) {
           />
         </svg>
       );
+    case "check-circle":
+      return (
+        <svg viewBox="0 0 24 24" {...common}>
+          <circle
+            cx="12"
+            cy="12"
+            r="9"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+          />
+          <path
+            d="m8.5 12.5 2.5 2.5 5-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    case "info":
+      return (
+        <svg viewBox="0 0 24 24" {...common}>
+          <circle
+            cx="12"
+            cy="12"
+            r="9"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+          />
+          <path
+            d="M12 8v4M12 16h.01"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
     default:
       return null;
   }

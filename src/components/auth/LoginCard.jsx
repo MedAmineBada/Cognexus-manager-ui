@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Icon } from "../ui/Icons.jsx";
 import { login } from "../../api/auth.js";
 
-export function LoginCard({ onSubmit, onError }) {
+export function LoginCard({ onSubmit, onError, onNavigateSignUp }) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -127,6 +127,21 @@ export function LoginCard({ onSubmit, onError }) {
           <Icon name="arrow-forward" className="primary-btn__icon" />
         </button>
       </form>
+
+      {onNavigateSignUp && (
+        <div className="login-card__footer">
+          <p className="login-card__footer-text">
+            Don't have an account?{" "}
+            <button
+              type="button"
+              className="login-card__footer-link"
+              onClick={onNavigateSignUp}
+            >
+              Sign up
+            </button>
+          </p>
+        </div>
+      )}
     </section>
   );
 }

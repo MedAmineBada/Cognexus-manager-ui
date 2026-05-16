@@ -23,7 +23,11 @@ export default function LoginPage({ navigate }) {
       {error && <ErrorPopup message={error} onClose={handleCloseError} />}
       <div className="login-canvas">
         <LoginBrand />
-        <LoginCard onSubmit={handleSubmit} onError={setError} />
+        <LoginCard
+          onSubmit={handleSubmit}
+          onError={setError}
+          onNavigateSignUp={() => navigate("register")}
+        />
       </div>
     </LoginShell>
   );
