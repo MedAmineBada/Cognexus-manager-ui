@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { isAuthenticated } from "../api/auth.js";
+import { isAuthenticated, checkUserExists } from "../api/auth.js";
 
 export const ROUTES = {
   login: "/login",
@@ -16,12 +16,73 @@ function resolveRoute() {
   if (pathname === ROUTES.features) return "features";
   if (pathname === ROUTES.register) return "register";
   if (pathname === ROUTES.init) return "init";
-  return "login";
+  if (pathname === ROUTES.login) return "login";
+  // Default to init route for development
+  return "init";
 }
 
 export function useAppRouter() {
   const [route, setRoute] = useState(resolveRoute);
+  const [isChecking, setIsChecking] = useState(true);
   const isInitialMount = useRef(true);
+
+  // Check if user exists on app launch
+  useEffect(() => {
+    if (!isInitialMount.current) return;
+    isInitialMount.current = false;
+
+    async function performInitialCheck() {
+      try {
+        const { userExists } = await checkUserExists();
+        console.log("User exists check result:", userExists);
+
+        const currentRoute = resolveRoute();
+        const isPublicRoute = PUBLIC_ROUTES.includes(currentRoute);
+        const isAuthed = isAuthenticated();
+
+        // If no user exists, force redirect to /init
+        if (!userExists) {
+          if (window.location.pathname !== ROUTES.init) {
+            window.history.replaceState({}, "", ROUTES.init);
+          }
+          setRoute("init");
+          setIsChecking(false);
+          return;
+        }
+
+        // User exists, continue with normal auth flow
+        // If trying to access protected route without auth, redirect to login
+        if (!isPublicRoute && !isAuthed) {
+          if (window.location.pathname !== ROUTES.login) {
+            window.history.replaceState({}, "", ROUTES.login);
+          }
+          setRoute("login");
+          setIsChecking(false);
+          return;
+        }
+
+        // If authenticated and on login/init page, redirect to features
+        if (isAuthed && (currentRoute === "login" || currentRoute === "init")) {
+          if (window.location.pathname !== ROUTES.features) {
+            window.history.replaceState({}, "", ROUTES.features);
+          }
+          setRoute("features");
+          setIsChecking(false);
+          return;
+        }
+
+        setRoute(currentRoute);
+      } catch (error) {
+        console.error("Initial check failed:", error);
+        // On error, default to login flow
+        setRoute("login");
+      } finally {
+        setIsChecking(false);
+      }
+    }
+
+    performInitialCheck();
+  }, []);
 
   const navigate = useCallback((name) => {
     const path = ROUTES[name] || ROUTES.login;
@@ -31,45 +92,12 @@ export function useAppRouter() {
     setRoute(name);
   }, []);
 
-  // Route guard: Check authentication on mount and route changes
   useEffect(() => {
-    if (!isInitialMount.current) return;
-    isInitialMount.current = false;
-
-    const currentRoute = resolveRoute();
-    const isPublicRoute = PUBLIC_ROUTES.includes(currentRoute);
-    const isAuthed = isAuthenticated();
-
-    // If trying to access protected route without auth, redirect to login
-    if (!isPublicRoute && !isAuthed) {
-      if (window.location.pathname !== ROUTES.login) {
-        window.history.replaceState({}, "", ROUTES.login);
-      }
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setRoute("login");
-      return;
+    if (window.location.pathname === "/" && !isChecking) {
+      window.history.replaceState({}, "", ROUTES.init);
+      setRoute("init"); // eslint-disable-line react-hooks/set-state-in-effect
     }
-
-    // If authenticated and on login page, redirect to features
-    if (isAuthed && currentRoute === "login") {
-      if (window.location.pathname !== ROUTES.features) {
-        window.history.replaceState({}, "", ROUTES.features);
-      }
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setRoute("features");
-      return;
-    }
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setRoute(currentRoute);
-  }, []);
-
-  useEffect(() => {
-    if (window.location.pathname === "/") {
-      window.history.replaceState({}, "", ROUTES.login);
-      setRoute("login"); // eslint-disable-line react-hooks/set-state-in-effect
-    }
-  }, []);
+  }, [isChecking]);
 
   useEffect(() => {
     const onPopState = () => {
@@ -85,7 +113,7 @@ export function useAppRouter() {
         return;
       }
 
-      if (isAuthed && currentRoute === "login") {
+      if (isAuthed && (currentRoute === "login" || currentRoute === "init")) {
         window.history.replaceState({}, "", ROUTES.features);
         setRoute("features");
         return;
@@ -97,6 +125,11 @@ export function useAppRouter() {
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
+
+  // Show loading state while checking
+  if (isChecking) {
+    return { route: "loading", navigate };
+  }
 
   return { route, navigate };
 }

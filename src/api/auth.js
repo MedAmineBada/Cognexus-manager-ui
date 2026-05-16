@@ -5,12 +5,6 @@ const ACCESS_TOKEN_KEY = "cognexus_access_token";
 // Note: refresh_token is now stored in HttpOnly cookie by the server
 // and cannot be accessed via JavaScript for security reasons
 
-/**
- * Check if refresh token cookie exists
- * Since HttpOnly cookies can't be read by JavaScript,
- * we infer its existence by checking if we have a valid access token
- * and making a test request to verify authentication
- */
 export async function hasRefreshTokenCookie() {
   // We can't directly check HttpOnly cookies from JavaScript
   // Instead, we'll check if we have an access token
@@ -19,18 +13,12 @@ export async function hasRefreshTokenCookie() {
   return !!accessToken;
 }
 
-/**
- * Store access token in memory (sessionStorage for persistence across refreshes)
- */
 export function setAccessToken(token) {
   if (typeof window !== "undefined") {
     sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
   }
 }
 
-/**
- * Get access token from memory
- */
 export function getAccessToken() {
   if (typeof window !== "undefined") {
     return sessionStorage.getItem(ACCESS_TOKEN_KEY);
@@ -38,27 +26,18 @@ export function getAccessToken() {
   return null;
 }
 
-/**
- * Clear access token from memory
- */
 export function clearAccessToken() {
   if (typeof window !== "undefined") {
     sessionStorage.removeItem(ACCESS_TOKEN_KEY);
   }
 }
 
-/**
- * Check if user is authenticated (both tokens must be present)
- */
 export function isAuthenticated() {
   const accessToken = getAccessToken();
   const hasRefreshToken = hasRefreshTokenCookie();
   return !!accessToken && hasRefreshToken;
 }
 
-/**
- * Clear all authentication tokens
- */
 export function clearAuth() {
   clearAccessToken();
   // Note: HttpOnly refresh token cookie will be cleared by the server
@@ -66,9 +45,6 @@ export function clearAuth() {
   // We can't directly delete HttpOnly cookies from JavaScript
 }
 
-/**
- * Parse error message to determine error type
- */
 export function parseAuthError(errorMessage) {
   const lowerMessage = errorMessage.toLowerCase();
 
@@ -91,6 +67,118 @@ export function parseAuthError(errorMessage) {
     type: "auth_failed",
     message: "Either the password is incorrect or your account is not active.",
   };
+}
+
+export async function checkUserExists() {
+  try {
+    const response = await fetch(`${API_URL}/auth/check`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Check user response status:", response.status);
+
+    // 200 → User exists
+    if (response.status === 200) {
+      return { userExists: true };
+    }
+
+    // 404 → No user exists
+    if (response.status === 404) {
+      return { userExists: false };
+    }
+
+    // For any other status, assume user doesn't exist (safe default)
+    console.warn("Unexpected status from /auth/check:", response.status);
+    return { userExists: false };
+  } catch (error) {
+    console.error("Check user error:", error);
+    // On network error, assume user doesn't exist to allow init flow
+    return { userExists: false };
+  }
+}
+
+export async function initFirstUser(name, email, password) {
+  try {
+    const response = await fetch(`${API_URL}/auth/init`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name,
+        email: email,
+        password: password,
+      }),
+    });
+
+    console.log("Init user response status:", response.status);
+
+    // Handle different error status codes
+    if (response.status === 422) {
+      const errorData = await response.json().catch(() => ({}));
+      console.log("422 Error data:", errorData);
+      return {
+        success: false,
+        error:
+          errorData.detail ||
+          errorData.message ||
+          "Validation failed. Please check your input.",
+        statusCode: 422,
+      };
+    }
+
+    if (response.status === 409) {
+      const errorData = await response.json().catch(() => ({}));
+      console.log("409 Error data:", errorData);
+      return {
+        success: false,
+        error: "An admin user already exists.",
+        statusCode: 409,
+      };
+    }
+
+    if (response.status === 500) {
+      console.log("500 Server error");
+      return {
+        success: false,
+        error: "Something went wrong in the backend. Please try again later.",
+        statusCode: 500,
+      };
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.log("Other error status:", response.status, errorData);
+      return {
+        success: false,
+        error:
+          errorData.error ||
+          errorData.message ||
+          "Initialization failed. Please try again.",
+      };
+    }
+
+    // Successful initialization
+    const data = await response.json();
+    console.log("Initialization successful:", data);
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error("Init user error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Network error. Please check your connection.",
+    };
+  }
 }
 
 /**

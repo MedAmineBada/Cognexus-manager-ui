@@ -150,3 +150,35 @@ export function validateRegistrationForm(formData) {
     errors,
   };
 }
+
+/**
+ * Validate all initialization form fields (name, email, password without invitation code)
+ * @param {object} formData - Object containing name, email, password
+ * @returns {{valid: boolean, errors: object}}
+ */
+export function validateInitForm(formData) {
+  const { name, email, password } = formData;
+
+  const nameValidation = validateName(name);
+  const emailValidation = validateEmail(email);
+  const passwordValidation = validatePassword(password);
+
+  const errors = {};
+
+  if (!nameValidation.valid) {
+    errors.name = nameValidation.error;
+  }
+
+  if (!emailValidation.valid) {
+    errors.email = emailValidation.error;
+  }
+
+  if (!passwordValidation.valid) {
+    errors.password = passwordValidation.error;
+  }
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+  };
+}

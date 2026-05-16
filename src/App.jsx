@@ -1,6 +1,7 @@
 import FeatureFlagsPage from "./pages/FeatureFlagsPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
+import InitPage from "./pages/InitPage.jsx";
 import { useAppRouter } from "./hooks/useAppRouter.js";
 import { useIdleLogout } from "./hooks/useIdleLogout.js";
 
@@ -14,6 +15,16 @@ export default function App() {
   // Enable idle logout (hook handles authentication check internally)
   useIdleLogout(IDLE_TIMEOUT);
 
+  // Show loading state while checking if user exists
+  if (route === "loading") {
+    return (
+      <div className="app-loading">
+        <div className="app-loading__spinner"></div>
+        <p className="app-loading__text">Loading...</p>
+      </div>
+    );
+  }
+
   if (route === "features") {
     return <FeatureFlagsPage />;
   }
@@ -22,6 +33,10 @@ export default function App() {
     return <RegisterPage navigate={navigate} />;
   }
 
-  // For init and login routes, show login
+  if (route === "init") {
+    return <InitPage navigate={navigate} />;
+  }
+
+  // Default to login route
   return <LoginPage navigate={navigate} />;
 }
