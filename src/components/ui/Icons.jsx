@@ -515,6 +515,19 @@ export function Icon({ name, className = "" }) {
           />
         </svg>
       );
+    case "code":
+      return (
+        <svg viewBox="0 0 24 24" {...common}>
+          <path
+            d="m16 18 6-6-6-6M8 6 2 12l6 6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
     default:
       return null;
   }
