@@ -19,7 +19,7 @@
   --danger-soft: #fee2e2;
   --success: #10b981;
   --gradient-primary: linear-gradient(135deg, #0066ff 0%, #3385ff 50%, #0052cc 100%);
-  --gradient-sidebar: linear-gradient(180deg, #f0f4ff 0%, #e0e8ff 100%);
+  --gradient-sidebar: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
   --gradient-login-bg: linear-gradient(135deg, #ffffff 0%, #e8f0ff 30%, #f0f4ff 50%, #e0e8ff 70%, #ffffff 100%);
   --gradient-login-card: linear-gradient(135deg, #ffffff 0%, #f0f4ff 35%, #e8f0ff 65%, #f5f8ff 100%);
   --shadow: 0 1px 0 rgba(15, 23, 42, 0.045), 0 10px 30px rgba(15, 23, 42, 0.06);
@@ -186,7 +186,7 @@ svg {
   padding: 16px 10px 12px;
   background: var(--gradient-sidebar);
   border-right: 1px solid var(--border);
-  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.225);
+  box-shadow: 1px 0 8px rgba(0, 0, 0, 0.08);
 }
 
 .sidebar__brand {
@@ -1136,7 +1136,7 @@ html.dark .table-shell {
   width: min(82vw, 300px);
   max-width: 300px;
   z-index: 39;
-  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.135);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
 }
 
 .sidebar--mobile.is-open {
@@ -1200,7 +1200,7 @@ html.dark .table-shell {
     transform: translateX(-102%);
     transition: transform 0.22s ease;
     z-index: 39;
-    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.135);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
   }
 
   .sidebar.is-open {
