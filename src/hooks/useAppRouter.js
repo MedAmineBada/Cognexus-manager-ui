@@ -6,6 +6,7 @@ export const ROUTES = {
   register: "/register",
   init: "/init",
   features: "/features",
+  security: "/security",
 };
 
 // Public routes that don't require authentication
@@ -14,11 +15,12 @@ const PUBLIC_ROUTES = ["login", "register", "init"];
 function resolveRoute() {
   const { pathname } = window.location;
   if (pathname === ROUTES.features) return "features";
+  if (pathname === ROUTES.security) return "security";
   if (pathname === ROUTES.register) return "register";
   if (pathname === ROUTES.init) return "init";
   if (pathname === ROUTES.login) return "login";
-  // Default to init route for development
-  return "init";
+  // Default to login route
+  return "login";
 }
 
 export function useAppRouter() {
@@ -94,8 +96,8 @@ export function useAppRouter() {
 
   useEffect(() => {
     if (window.location.pathname === "/" && !isChecking) {
-      window.history.replaceState({}, "", ROUTES.init);
-      setRoute("init"); // eslint-disable-line react-hooks/set-state-in-effect
+      window.history.replaceState({}, "", ROUTES.login);
+      setRoute("login"); // eslint-disable-line react-hooks/set-state-in-effect
     }
   }, [isChecking]);
 

@@ -1,17 +1,44 @@
+import { useState, useEffect } from "react";
 import { Icon } from "../ui/Icons.jsx";
 import { logout } from "../../api/auth.js";
 
 const items = [
-  { label: "Controls", icon: "sliders", active: true },
-  { label: "Security", icon: "shield" },
-  { label: "Insights", icon: "chart" },
+  { label: "Controls", icon: "sliders", route: "/features" },
+  { label: "Security", icon: "shield", route: "/security" },
+  { label: "Insights", icon: "chart", route: null },
 ];
 
 const footerItems = [{ label: "Logout", icon: "logout" }];
 
-export function Sidebar({ mobileOpen, onClose, isMobileNav }) {
+export function Sidebar({
+  mobileOpen,
+  onClose,
+  isMobileNav,
+  activeItem = "features",
+}) {
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   const handleLogout = () => {
     logout();
+  };
+
+  const handleNavigate = (route) => {
+    if (route && window.location.pathname !== route) {
+      window.history.pushState({}, "", route);
+      setCurrentPath(route);
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    }
+    if (mobileOpen) {
+      onClose();
+    }
   };
 
   return (
@@ -47,7 +74,8 @@ export function Sidebar({ mobileOpen, onClose, isMobileNav }) {
             <button
               key={item.label}
               type="button"
-              className={`sidebar__item ${item.active ? "is-active" : ""}`}
+              className={`sidebar__item ${item.route === currentPath ? "is-active" : ""}`}
+              onClick={() => handleNavigate(item.route)}
             >
               <Icon name={item.icon} className="sidebar__icon" />
               <span>{item.label}</span>

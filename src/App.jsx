@@ -1,4 +1,5 @@
 import FeatureFlagsPage from "./pages/FeatureFlagsPage.jsx";
+import SecurityPage from "./pages/SecurityPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import InitPage from "./pages/InitPage.jsx";
@@ -27,6 +28,10 @@ export default function App() {
 
   if (route === "features") {
     return <FeatureFlagsPage />;
+  }
+
+  if (route === "security") {
+    return <SecurityPage />;
   }
 
   if (route === "register") {
