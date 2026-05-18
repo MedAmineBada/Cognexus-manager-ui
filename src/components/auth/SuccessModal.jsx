@@ -1,7 +1,12 @@
 import { useEffect } from "react";
 import { Icon } from "../ui/Icons.jsx";
 
-export function SuccessModal({ message, onDismiss, duration = 4000 }) {
+export function SuccessModal({
+  message,
+  title = "Success",
+  onDismiss,
+  duration = 4000,
+}) {
   useEffect(() => {
     // Auto-dismiss after duration
     const timer = setTimeout(() => {
@@ -26,9 +31,11 @@ export function SuccessModal({ message, onDismiss, duration = 4000 }) {
           <Icon name="check-circle" className="success-modal__icon-svg" />
         </div>
 
-        <h3 className="success-modal__title">Registration Successful</h3>
+        <h3 className="success-modal__title">{title}</h3>
 
-        <p className="success-modal__message">{message}</p>
+        <p className="success-modal__message" style={{ textAlign: "center" }}>
+          {message}
+        </p>
 
         <button
           type="button"

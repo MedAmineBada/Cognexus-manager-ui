@@ -397,12 +397,15 @@ export async function register(name, email, password, code) {
 /**
  * Logout handler
  * Calls the server logout endpoint to clear HttpOnly refresh token cookie
+ * Used for all logout events: manual, automated, self-deactivation, idle, rotation
  */
 export async function logout() {
   try {
     // Call server logout endpoint to clear HttpOnly cookie
-    await authenticatedFetch(`${API_URL}/auth/logout`, {
+    // Use fetch directly with credentials to ensure it works even if token is invalid
+    await fetch(`${API_URL}/auth/logout`, {
       method: "POST",
+      credentials: "include", // Include HttpOnly refresh token cookie
     });
   } catch (error) {
     console.error("Logout API call failed:", error);

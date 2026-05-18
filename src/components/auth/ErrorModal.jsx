@@ -1,6 +1,6 @@
 import { Icon } from "../ui/Icons.jsx";
 
-export function ErrorModal({ message, onDismiss }) {
+export function ErrorModal({ message, title = "Error", onDismiss }) {
   return (
     <div className="error-modal-overlay" role="dialog" aria-modal="true">
       <div className="error-modal">
@@ -8,9 +8,11 @@ export function ErrorModal({ message, onDismiss }) {
           <Icon name="close" className="error-modal__icon-svg" />
         </div>
 
-        <h3 className="error-modal__title">Registration Failed</h3>
+        <h3 className="error-modal__title">{title}</h3>
 
-        <p className="error-modal__message">{message}</p>
+        <p className="error-modal__message" style={{ textAlign: "center" }}>
+          {message}
+        </p>
 
         <button
           type="button"

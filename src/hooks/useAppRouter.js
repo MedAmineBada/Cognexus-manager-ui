@@ -36,7 +36,6 @@ export function useAppRouter() {
     async function performInitialCheck() {
       try {
         const { userExists } = await checkUserExists();
-        console.log("User exists check result:", userExists);
 
         const currentRoute = resolveRoute();
         const isPublicRoute = PUBLIC_ROUTES.includes(currentRoute);

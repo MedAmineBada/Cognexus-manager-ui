@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 import { Icon } from "../ui/Icons.jsx";
-import { clearAuth } from "../../api/auth.js";
+import { logout } from "../../api/auth.js";
 
-export function RotationLogoutModal({ duration = 5000 }) {
+export function RotationLogoutModal({
+  duration = 5000,
+  title = "Security Keys Rotated",
+  message = "Your security keys have been rotated successfully. To ensure the system continues to operate correctly with the new keys, you will be logged out automatically.",
+  subtext = "Please login again with your credentials.",
+  iconName = "info",
+}) {
   const [timeLeft, setTimeLeft] = useState(Math.ceil(duration / 1000));
 
   useEffect(() => {
@@ -19,8 +25,7 @@ export function RotationLogoutModal({ duration = 5000 }) {
 
     // Auto-logout and redirect after duration
     const logoutTimer = setTimeout(() => {
-      clearAuth();
-      window.location.href = "/";
+      logout();
     }, duration);
 
     return () => {
@@ -39,25 +44,19 @@ export function RotationLogoutModal({ duration = 5000 }) {
         <div className="rotation-logout-modal__progress" />
 
         <div className="rotation-logout-modal__icon">
-          <Icon name="info" className="rotation-logout-modal__icon-svg" />
+          <Icon name={iconName} className="rotation-logout-modal__icon-svg" />
         </div>
 
-        <h3 className="rotation-logout-modal__title">Security Keys Rotated</h3>
+        <h3 className="rotation-logout-modal__title">{title}</h3>
 
-        <p className="rotation-logout-modal__message">
-          Your security keys have been rotated successfully. To ensure the
-          system continues to operate correctly with the new keys, you will be
-          logged out automatically.
-        </p>
+        <p className="rotation-logout-modal__message">{message}</p>
 
         <p className="rotation-logout-modal__timer">
           Redirecting to login in <strong>{timeLeft}</strong> second
           {timeLeft !== 1 ? "s" : ""}...
         </p>
 
-        <p className="rotation-logout-modal__subtext">
-          Please login again with your credentials.
-        </p>
+        <p className="rotation-logout-modal__subtext">{subtext}</p>
       </div>
     </div>
   );
